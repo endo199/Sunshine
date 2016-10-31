@@ -137,8 +137,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
             Uri uri = resolver.insert(WeatherContract.LocationEntry.CONTENT_URI, value);
 
-            long id = ContentUris.parseId(uri);
-            return id;
+            return ContentUris.parseId(uri);
         }
     }
 
@@ -220,7 +219,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
             // Insert the new weather information into the database
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
+            Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
 
             // OWM returns daily forecasts based upon the local time of the city that is being
             // asked for, which means that we need to know the GMT offset to translate this data
@@ -385,7 +384,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             if (inputStream == null) {
                 // Nothing to do.
                 return null;
@@ -397,7 +396,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                 // But it does make debugging a *lot* easier if you print out the completed
                 // buffer for debugging.
-                buffer.append(line + "\n");
+                buffer.append(line).append("\n");
             }
 
             if (buffer.length() == 0) {
