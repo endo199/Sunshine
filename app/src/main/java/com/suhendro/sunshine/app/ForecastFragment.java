@@ -1,28 +1,23 @@
 package com.suhendro.sunshine.app;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import com.suhendro.sunshine.app.data.WeatherContract;
 
 
 /**
@@ -33,10 +28,12 @@ import java.util.List;
  * Use the {@link ForecastFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ForecastFragment extends Fragment {
-    // Open Weather Map API key = bc197703a1e0fa58678a8ee336ebe92b
+public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static final int FORECAST_ID = ForecastFragment.class.hashCode();
+
     private final String OPEN_WEATHER_API_KEY = "bc197703a1e0fa58678a8ee336ebe92b";
     private String jsonWeatherData = null;
+    private ForecastAdapter mForecastAdapter = null;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -48,6 +45,24 @@ public class ForecastFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    private static final String[] FORECAST_COLUMNS = {
+            // In this case the id needs to be fully qualified with a table name, since
+            // the content provider joins the location & weather tables in the background
+            // (both have an _id column)
+            // On the one hand, that's annoying.  On the other, you can search the weather table
+            // using the location set by the user, which is only in the Location table.
+            // So the convenience is worth it.
+            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+            WeatherContract.WeatherEntry.COLUMN_DATE,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherContract.LocationEntry.COLUMN_COORD_LAT,
+            WeatherContract.LocationEntry.COLUMN_COORD_LONG
+    };
 
     public ForecastFragment() {
         // Required empty public constructor
@@ -90,13 +105,19 @@ public class ForecastFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
 
-        if(item.getItemId() == R.id.action_refresh) {
-            Log.i("XXX", "Weather API is being called");
+        if(id == R.id.action_refresh) {
+//            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//            String postalCode = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+
             // call weather API to get the data
-            new FetchWeatherTask().execute("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7&appid="+OPEN_WEATHER_API_KEY);
+//            new FetchWeatherTask().execute(postalCode);
+//            new FetchWeatherTask(getContext(), this.mForecastAdapter).execute(postalCode);
+            FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
+            String location = Utility.getPreferredLocation(getActivity());
+            weatherTask.execute(location);
 
-            Uri.Builder uriBuilder = new Uri.Builder();
 
             return true;
         }
@@ -104,30 +125,53 @@ public class ForecastFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private void updateWeather() {
+//        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        String postalCode = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+
+        // call weather API to get the data
+//        new FetchWeatherTask().execute(postalCode);
+//        new FetchWeatherTask(getContext(), this.mForecastAdapter).execute(postalCode);
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
+        String location = Utility.getPreferredLocation(getActivity());
+        weatherTask.execute(location);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        List<String> datas = new ArrayList<String>(10);
-        datas.add("Today - Sunny - 88/66");
-        datas.add("Tomorrow - Foggy - 88/66");
-        datas.add("Monday - Cloudy - 88/66");
-        datas.add("Tuesday - Sunny - 88/66");
-        datas.add("Wednesday - Rainy - 88/66");
-        datas.add("Thirsday - Rainy - 88/66");
-        datas.add("Friday - Sunny - 88/66");
-        datas.add("Saturday - Foggy - 88/66");
-        datas.add("Sunday - Sunny - 88/66");
+//        String locationSetting = Utility.getPreferredLocation(getActivity());
+//        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+//        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting, System.currentTimeMillis());
+//        Cursor cur = getActivity().getContentResolver().query(weatherUri, null, null, null, sortOrder);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, datas);
+        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
 
-        new FetchWeatherTask().execute("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7&appid="+OPEN_WEATHER_API_KEY);
+//        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, new ArrayList<String>());
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         ListView listView = (ListView) view.findViewById(R.id.listview_forecast);
-        listView.setAdapter(adapter);
+        listView.setAdapter(mForecastAdapter);
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                String forecast = mForecastAdapter.getItem(position);
+//
+//                Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
+//                detailIntent.putExtra(Intent.EXTRA_TEXT, forecast);
+//
+//                startActivity(detailIntent);
+//            }
+//        });
 
         return view;
     }
@@ -156,6 +200,26 @@ public class ForecastFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        Uri uri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting, System.currentTimeMillis());
+
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+
+        return new CursorLoader(getActivity(), uri, FORECAST_COLUMNS, null, null, sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mForecastAdapter.swapCursor(null);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -171,79 +235,10 @@ public class ForecastFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    protected class FetchWeatherTask extends AsyncTask<String, Void, String> {
-        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-        @Override
-        protected String doInBackground(String... urls) {
-            // These two need to be declared outside the try/catch
-// so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-// Will contain the raw JSON response as a string.
-            String forecastJsonStr = null;
-
-            try {
-                // Construct the URL for the OpenWeatherMap query
-                // Possible parameters are available at OWM's forecast API page, at
-                // http://openweathermap.org/API#forecast
-                URL url = new URL(urls[0]);
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    forecastJsonStr = null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    forecastJsonStr = null;
-                }
-                forecastJsonStr = buffer.toString();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attempting
-                // to parse it.
-                forecastJsonStr = null;
-            } finally{
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            Log.i(LOG_TAG, forecastJsonStr);
-
-            return forecastJsonStr;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-//            super.onPostExecute(result);
-            jsonWeatherData = result;
-        }
+        getLoaderManager().initLoader(FORECAST_ID, savedInstanceState, this);
     }
 }
