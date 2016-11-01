@@ -121,9 +121,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         int id = item.getItemId();
 
         if(id == R.id.action_refresh) {
-//            FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
-//            String location = Utility.getPreferredLocation(getActivity());
-//            weatherTask.execute(location);
             getLoaderManager().restartLoader(FORECAST_ID, null, this);
             return true;
         }
@@ -137,12 +134,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         String location = Utility.getPreferredLocation(getActivity());
         weatherTask.execute(location);
     }
-
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        updateWeather();
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
