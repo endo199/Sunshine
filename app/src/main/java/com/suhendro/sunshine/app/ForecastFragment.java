@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -120,11 +121,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         int id = item.getItemId();
 
         if(id == R.id.action_refresh) {
-            FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
-            String location = Utility.getPreferredLocation(getActivity());
-            weatherTask.execute(location);
-
-
+//            FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
+//            String location = Utility.getPreferredLocation(getActivity());
+//            weatherTask.execute(location);
+            getLoaderManager().restartLoader(FORECAST_ID, null, this);
             return true;
         }
 
@@ -132,16 +132,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateWeather() {
+        Log.i("XXX", "updating weather data");
         FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         String location = Utility.getPreferredLocation(getActivity());
         weatherTask.execute(location);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateWeather();
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//        updateWeather();
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -166,17 +167,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 }
             }
         });
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                String forecast = mForecastAdapter.getItem(position);
-//
-//                Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-//                detailIntent.putExtra(Intent.EXTRA_TEXT, forecast);
-//
-//                startActivity(detailIntent);
-//            }
-//        });
 
         return view;
     }
@@ -245,5 +235,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         super.onActivityCreated(savedInstanceState);
 
         getLoaderManager().initLoader(FORECAST_ID, savedInstanceState, this);
+    }
+
+    public void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_ID, null, this);
+    }
+
+    public void onUnitChanged() {
+        getLoaderManager().restartLoader(FORECAST_ID, null, this);
     }
 }

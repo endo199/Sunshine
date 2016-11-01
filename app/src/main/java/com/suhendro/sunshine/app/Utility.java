@@ -52,4 +52,12 @@ public class Utility {
         Date date = new Date(dateInMillis);
         return DateFormat.getDateInstance().format(date);
     }
+
+    static String formatTemperatureWithDegree(double temperature, boolean isMetric) {
+        String degreeUnit = " \u2103";
+        if(!isMetric)
+            degreeUnit = " \u2109";
+
+        return formatTemperature(temperature, isMetric) + degreeUnit;
+    }
 }

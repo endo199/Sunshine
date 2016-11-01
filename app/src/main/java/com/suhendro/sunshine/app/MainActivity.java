@@ -1,22 +1,32 @@
 package com.suhendro.sunshine.app;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity implements ForecastFragment.OnFragmentInteractionListener {
+
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private String mLocation;
+    private boolean mUnit;
+    private final String FORECAST_TAG = "forecast_fragment_tag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mLocation = Utility.getPreferredLocation(this);
+        mUnit = Utility.isMetric(this);
+
+//        if(savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.activity_main, new ForecastFragment(), FORECAST_TAG)
+//                    .commit();
+//        }
     }
 
     @Override
@@ -68,6 +78,28 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             startActivity(intent);
         } else {
             Log.d(LOG_TAG, "Couldn't call " + location + ", no receiving apps installed!");
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("XXX", "onResume is called");
+        String location = Utility.getPreferredLocation(this);
+
+        ForecastFragment fragment = (ForecastFragment) getSupportFragmentManager().findFragmentByTag(FORECAST_TAG);
+
+        if(!location.equalsIgnoreCase(mLocation)) {
+            Log.i("XXX", "location is changed");
+            fragment.onLocationChanged();
+
+            mLocation = location;
+        }
+
+        boolean unit = Utility.isMetric(this);
+        if(unit != mUnit) {
+            mUnit = unit;
+            fragment.onUnitChanged();
         }
     }
 }

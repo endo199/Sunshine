@@ -169,9 +169,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
-    private void getWeatherDataFromJson(String forecastJsonStr,
-                                            String locationSetting)
-            throws JSONException {
+    private void getWeatherDataFromJson(String forecastJsonStr, String locationSetting) throws JSONException {
 
         // Now we have a String representing the complete forecast in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -300,7 +298,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 cVVector.toArray(values);
                 Uri uri = WeatherEntry.CONTENT_URI;
 
-                int result = contentResolver.bulkInsert(uri, values);
+                contentResolver.bulkInsert(uri, values);
             }
 
             // Sort order:  Ascending, by date.
@@ -359,8 +357,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            final String FORECAST_BASE_URL =
-                    "http://api.openweathermap.org/data/2.5/forecast/daily?";
+            final String FORECAST_BASE_URL ="http://api.openweathermap.org/data/2.5/forecast/daily?";
             final String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "mode";
             final String UNITS_PARAM = "units";
@@ -425,24 +422,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             }
         }
 
-//        try {
-//            getWeatherDataFromJson(forecastJsonStr, locationQuery);
-//        } catch (JSONException e) {
-//            Log.e(LOG_TAG, e.getMessage(), e);
-//            e.printStackTrace();
-//        }
         // This will only happen if there was an error getting or parsing the forecast.
         return null;
     }
-
-//    @Override
-//    protected void onPostExecute(String[] result) {
-//        if (result != null && mForecastAdapter != null) {
-//            mForecastAdapter.clear();
-//            for(String dayForecastStr : result) {
-//                mForecastAdapter.add(dayForecastStr);
-//            }
-//            // New data is back from the server.  Hooray!
-//        }
-//    }
 }
