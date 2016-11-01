@@ -14,7 +14,9 @@
 
         <provider
             android:authorities="com.suhendro.sunshine.app"
-            android:name="com.suhendro.sunshine.app.data.WeatherProvider" />
+            android:name="com.suhendro.sunshine.app.data.WeatherProvider"
+            android:enabled="true"
+            android:exported="false" />
 
         <activity android:name=".MainActivity">
             <intent-filter>
