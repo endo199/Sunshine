@@ -167,10 +167,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         if(data != null && !data.moveToFirst())
             return;
 
-        int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
+        int weatherCondId = data.getInt(COL_WEATHER_CONDITION_ID);
 
 
-        mIconView.setImageResource(R.mipmap.ic_launcher);
+        mIconView.setImageResource(Utility.getWeatherResource(weatherCondId, false));
 
         long date = data.getLong(COL_WEATHER_DATE);
         String day = Utility.getDayName(getActivity(), date);

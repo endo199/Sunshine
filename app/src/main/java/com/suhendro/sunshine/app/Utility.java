@@ -182,4 +182,51 @@ public class Utility {
         }
         return String.format(context.getString(windFormat), windSpeed, direction);
     }
+
+    public static int getWeatherResource(int weatherConditionId, boolean isIcon) {
+        int[] weatherArt = {
+                R.drawable.art_clear,
+                R.drawable.art_clouds,
+                R.drawable.art_fog,
+                R.drawable.art_light_clouds,
+                R.drawable.art_light_rain,
+                R.drawable.art_rain,
+                R.drawable.art_snow,
+                R.drawable.art_storm
+        };
+
+        int[] weatherIcon = {
+                R.drawable.ic_clear,
+                R.drawable.ic_clouds,
+                R.drawable.ic_fog,
+                R.drawable.ic_light_clouds,
+                R.drawable.ic_light_rain,
+                R.drawable.ic_rain,
+                R.drawable.ic_snow,
+                R.drawable.ic_storm
+        };
+
+        int weatherIdx = 0;
+        if(weatherConditionId == 800) {
+            weatherIdx = 0;
+        } else if (weatherConditionId == 741) {
+            weatherIdx = 2;
+        } else if (weatherConditionId == 801) {
+            weatherIdx = 3;
+        } else if(weatherConditionId == 500) {
+            weatherIdx = 4;
+        } else if (weatherConditionId - 200 <= 99) {
+            weatherIdx = 7;
+        } else if (weatherConditionId - 500 <= 99) {
+            weatherIdx = 5;
+        } else if (weatherConditionId - 600 <= 99) {
+            weatherIdx = 6;
+        } else if (weatherConditionId - 800 <= 9) {
+            weatherIdx = 1;
+        } else {
+            return -1;
+        }
+
+        return (isIcon) ? weatherIcon[weatherIdx] : weatherArt[weatherIdx];
+    }
 }

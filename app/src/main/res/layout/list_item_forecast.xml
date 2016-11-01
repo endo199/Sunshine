@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minHeight="?attr/listPreferredItemHeight"
-    android:padding="?attr/listPreferredItemPaddingRight">
+    android:padding="4dp">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -38,7 +38,9 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="0"
-        android:gravity="center_vertical">
+        android:gravity="right|center_vertical"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
 
         <TextView
             android:layout_width="wrap_content"

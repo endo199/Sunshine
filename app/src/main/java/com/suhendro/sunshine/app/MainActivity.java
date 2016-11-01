@@ -3,6 +3,7 @@ package com.suhendro.sunshine.app;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -21,6 +22,9 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
         mLocation = Utility.getPreferredLocation(this);
         mUnit = Utility.isMetric(this);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setIcon(R.mipmap.ic_launcher);
 
 //        if(savedInstanceState == null) {
 //            getSupportFragmentManager().beginTransaction()
@@ -43,17 +47,6 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
             return true;
         } else if(id == R.id.action_location_map) {
-//            Intent locationIntent = new Intent(Intent.ACTION_VIEW);
-//
-//            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-//            String location = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-//
-//            Uri geolocation = Uri.parse("geo:0,0?q="+location);
-//            locationIntent.setData(geolocation);
-//
-//            if(locationIntent.resolveActivity(getPackageManager()) != null) {
-//                startActivity(locationIntent);
-//            }
 
             openPreferredLocationInMap();
             return true;
