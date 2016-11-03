@@ -3,17 +3,20 @@ package com.suhendro.sunshine.app;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity implements ForecastFragment.OnFragmentInteractionListener {
+import com.suhendro.sunshine.app.data.WeatherContract;
+
+public class MainActivity extends AppCompatActivity implements ForecastFragment.OnFragmentInteractionListener, DetailFragment.OnFragmentInteractionListener {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private String mLocation;
     private boolean mUnit;
-    private final String FORECAST_TAG = "forecast_fragment_tag";
+    private final String FORECAST_FRAGMENT_TAG = "forecast_fragment_tag";
+    private final String DETAIL_FRAGMENT_TAG = "detail_fragment_tag";
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,19 +26,26 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         mLocation = Utility.getPreferredLocation(this);
         mUnit = Utility.isMetric(this);
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setIcon(R.mipmap.ic_launcher);
+        if(findViewById(R.id.weather_detail_container) != null) {
+            // this is two pane layout
+            mTwoPane = true;
 
-//        if(savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.activity_main, new ForecastFragment(), FORECAST_TAG)
-//                    .commit();
-//        }
-    }
+            // add detail fragment
+            // savedInstanceState != null, it could be screen update because of orientation changed
+            if(savedInstanceState == null) {
+                String location = Utility.getPreferredLocation(this);
 
-    @Override
-    public void onFragmentInteraction(Uri uri) {
+                Uri uri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(location, System.currentTimeMillis());
+                DetailFragment detailFragment = DetailFragment.newInstance(uri);
 
+                // newly created view, initialize fragment
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.weather_detail_container, detailFragment, DETAIL_FRAGMENT_TAG)
+                        .commit();
+            } else {
+                mTwoPane = false;
+            }
+        }
     }
 
     @Override
@@ -77,14 +87,17 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("XXX", "onResume is called");
         String location = Utility.getPreferredLocation(this);
 
-        ForecastFragment fragment = (ForecastFragment) getSupportFragmentManager().findFragmentByTag(FORECAST_TAG);
+        ForecastFragment fragment = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.forecast_fragment);
 
-        if(!location.equalsIgnoreCase(mLocation)) {
-            Log.i("XXX", "location is changed");
-            fragment.onLocationChanged();
+        if(location != null && !location.equalsIgnoreCase(mLocation)) {
+            if(fragment != null)
+                fragment.onLocationChanged();
+
+            DetailFragment detailFragment = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAIL_FRAGMENT_TAG);
+            if(detailFragment != null)
+                detailFragment.onLocationChanged(location);
 
             mLocation = location;
         }
@@ -94,5 +107,30 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             mUnit = unit;
             fragment.onUnitChanged();
         }
+    }
+
+    @Override
+    public void onForecastInteraction(Uri uri) {
+        if(mTwoPane) {
+            // change the detail fragment
+            String location = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
+            DetailFragment detailFragment = DetailFragment.newInstance(uri);
+
+            // if we already have detail fragment, why can't we just change the data not the whole fragment ?
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.weather_detail_container, detailFragment, DETAIL_FRAGMENT_TAG)
+                    .commit();
+        } else {
+            // start detail activity, because it's a smartphone type
+            Intent intent = new Intent(this, DetailActivity.class);
+            intent.setData(uri);
+
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onDetailInteraction(Uri uri) {
+
     }
 }

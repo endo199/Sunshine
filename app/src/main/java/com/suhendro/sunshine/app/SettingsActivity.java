@@ -1,13 +1,13 @@
 package com.suhendro.sunshine.app;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.KeyEvent;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -19,6 +19,12 @@ import android.view.KeyEvent;
  */
 public class SettingsActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
+
+    @Nullable
+    @Override
+    public Intent getParentActivityIntent() {
+        return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -1,7 +1,6 @@
 package com.suhendro.sunshine.app;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,28 +20,10 @@ import android.widget.ListView;
 
 import com.suhendro.sunshine.app.data.WeatherContract;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ForecastFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ForecastFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int FORECAST_ID = ForecastFragment.class.hashCode();
     private ForecastAdapter mForecastAdapter = null;
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
@@ -81,33 +61,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ForecastFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ForecastFragment newInstance(String param1, String param2) {
-        ForecastFragment fragment = new ForecastFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -129,9 +86,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateWeather() {
-        Log.i("XXX", "updating weather data");
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         String location = Utility.getPreferredLocation(getActivity());
+
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         weatherTask.execute(location);
     }
 
@@ -151,22 +108,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 if(cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
+                    Uri uri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE));
 
-                    Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-                    detailIntent.setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
-                    startActivity(detailIntent);
+                    // tell Activity that an item has been clicked
+                    mListener.onForecastInteraction(uri);
                 }
             }
         });
 
-        return view;
-    }
+        getLoaderManager().initLoader(FORECAST_ID, savedInstanceState, this);
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+        return view;
     }
 
     @Override
@@ -189,8 +141,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String locationSetting = Utility.getPreferredLocation(getActivity());
-        Uri uri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting, System.currentTimeMillis());
 
+        Uri uri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting, System.currentTimeMillis());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
         return new CursorLoader(getActivity(), uri, FORECAST_COLUMNS, null, null, sortOrder);
@@ -217,15 +169,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onForecastInteraction(Uri uri);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        getLoaderManager().initLoader(FORECAST_ID, savedInstanceState, this);
+//        getLoaderManager().initLoader(FORECAST_ID, savedInstanceState, this);
     }
 
     public void onLocationChanged() {

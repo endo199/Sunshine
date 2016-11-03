@@ -22,6 +22,12 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        if(savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.weather_detail_container, new DetailFragment())
+                    .commit();
+        }
     }
 
     @Override
@@ -51,7 +57,7 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
+    public void onDetailInteraction(Uri uri) {
 
     }
 }

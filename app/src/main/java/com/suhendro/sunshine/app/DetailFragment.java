@@ -37,6 +37,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private OnFragmentInteractionListener mListener;
     private ShareActionProvider mShareActionProvider;
     private String mForecastData = null;
+    private Uri mUri;
 
     private ImageView mIconView;
     private TextView mDateView;
@@ -80,9 +81,27 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public static final int COL_WEATHER_DEGREES = 8;
     public static final int COL_WEATHER_CONDITION_ID = 9;
 
+    public static DetailFragment newInstance(Uri uri) {
+        DetailFragment detailFragment = new DetailFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("uri", uri);
+        detailFragment.setArguments(args);
+
+        return detailFragment;
+    }
+
     public DetailFragment() {
         // Required empty public constructor
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mUri = (getArguments() != null) ? getArguments().<Uri>getParcelable("uri") : null;
+
+        getLoaderManager().initLoader(DETAIL_ID, savedInstanceState, this);
     }
 
     @Override
@@ -128,13 +147,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         return intent;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -156,10 +168,20 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Intent intent = getActivity().getIntent();
 
-        if(intent == null)
-            return null;
+        if(mUri == null) {
+            if((intent == null || intent.getData() == null)) {
+                Log.i("XXX", "there is no intent or uri data");
+                return null;
+            } else {
+                // data from activity call
+                mUri = intent.getData();
+            }
+        }
 
-        return new CursorLoader(getActivity(), intent.getData(), DETAIL_COLUMNS, null, null, null);
+        if(mUri == null)
+            Log.e("XXX", "mUri should not be empty");
+
+        return new CursorLoader(getActivity(), mUri, DETAIL_COLUMNS, null, null, null);
     }
 
     @Override
@@ -214,7 +236,19 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        getLoaderManager().initLoader(DETAIL_ID, savedInstanceState, this);
+//        getLoaderManager().initLoader(DETAIL_ID, savedInstanceState, this);
+    }
+
+    public void onLocationChanged(String newLocation) {
+        Uri uri = mUri;
+
+        if(uri != null) {
+            long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+            Uri updateUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+            mUri = updateUri;
+
+            getLoaderManager().restartLoader(DETAIL_ID, null, this);
+        }
     }
 
     /**
@@ -228,7 +262,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onDetailInteraction(Uri uri);
     }
 }
