@@ -20,6 +20,12 @@ import android.widget.ListView;
 
 import com.suhendro.sunshine.app.data.WeatherContract;
 
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link ForecastFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int FORECAST_ID = ForecastFragment.class.hashCode();
@@ -170,13 +176,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      */
     public interface OnFragmentInteractionListener {
         void onForecastInteraction(Uri uri);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-//        getLoaderManager().initLoader(FORECAST_ID, savedInstanceState, this);
     }
 
     public void onLocationChanged() {
