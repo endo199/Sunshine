@@ -33,6 +33,7 @@ import com.suhendro.sunshine.app.data.WeatherContract;
  */
 public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final int DETAIL_ID = DetailFragment.class.hashCode();
+    public static final String DETAIL_URI = "detail_uri";
 
     private OnFragmentInteractionListener mListener;
     private ShareActionProvider mShareActionProvider;
@@ -85,7 +86,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         DetailFragment detailFragment = new DetailFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable("uri", uri);
+        args.putParcelable(DETAIL_URI, uri);
         detailFragment.setArguments(args);
 
         return detailFragment;
@@ -99,7 +100,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUri = (getArguments() != null) ? getArguments().<Uri>getParcelable("uri") : null;
+        mUri = (getArguments() != null) ? getArguments().<Uri>getParcelable(DETAIL_URI) : null;
 
         getLoaderManager().initLoader(DETAIL_ID, savedInstanceState, this);
     }
@@ -166,20 +167,24 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Intent intent = getActivity().getIntent();
+//        Intent intent = getActivity().getIntent();
+//
+//        if(mUri == null) {
+//            if((intent == null || intent.getData() == null)) {
+//                Log.i("XXX", "there is no intent or uri data");
+//                return null;
+//            } else {
+//                // data from activity call
+//                mUri = intent.getData();
+//            }
+//        }
+//
+//        if(mUri == null)
+//            Log.e("XXX", "mUri should not be empty");
+        if(getArguments() == null)
+            return null;
 
-        if(mUri == null) {
-            if((intent == null || intent.getData() == null)) {
-                Log.i("XXX", "there is no intent or uri data");
-                return null;
-            } else {
-                // data from activity call
-                mUri = intent.getData();
-            }
-        }
-
-        if(mUri == null)
-            Log.e("XXX", "mUri should not be empty");
+        mUri = getArguments().getParcelable(DETAIL_URI);
 
         return new CursorLoader(getActivity(), mUri, DETAIL_COLUMNS, null, null, null);
     }
@@ -230,13 +235,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-//        getLoaderManager().initLoader(DETAIL_ID, savedInstanceState, this);
     }
 
     public void onLocationChanged(String newLocation) {

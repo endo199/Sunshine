@@ -11,10 +11,8 @@
     tools:context="com.suhendro.sunshine.app.DetailActivity"
     tools:ignore="MergeRootFrame">
 
-    <!--android:name="com.suhendro.sunshine.app.DetailFragment"-->
-    <fragment
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/weather_detail_container"
-        tools:layout="@layout/fragment_detail"/>
+        android:id="@+id/weather_detail_container"/>
 </FrameLayout>

@@ -24,8 +24,16 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         setContentView(R.layout.activity_detail);
 
         if(savedInstanceState == null) {
+            Intent intent = getIntent();
+            if(intent.getData() == null)
+                return;
+
+            Uri uri = intent.getData();
+
+            DetailFragment detailFragment = DetailFragment.newInstance(uri);
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.weather_detail_container, new DetailFragment())
+                    .add(R.id.weather_detail_container, detailFragment)
                     .commit();
         }
     }
